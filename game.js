@@ -36,7 +36,7 @@ canvas.height = 600;
 
 // Game properties
 const GRID_SIZE = 30;
-const OBSTACLE_HEIGHT = 20;
+const OBSTACLE_HEIGHT = 30;
 
 // Game state
 const gameState = {
@@ -90,134 +90,134 @@ const obstacles = [
     // Row 1 (bottom): Slow right-to-left
     {
         x: 0, y: safeZone.y + GRID_SIZE,
-        width: 60, height: OBSTACLE_HEIGHT,
-        speed: -0.5, color: '#FF0000'
+        width: 80, height: OBSTACLE_HEIGHT,
+        speed: -0.2, color: '#FF0000'
     },
     {
         x: 300, y: safeZone.y + GRID_SIZE,
-        width: 60, height: OBSTACLE_HEIGHT,
-        speed: -0.5, color: '#FF0000'
+        width: 80, height: OBSTACLE_HEIGHT,
+        speed: -0.2, color: '#FF0000'
     },
     // Row 2: Medium left-to-right
     {
         x: 0, y: safeZone.y + GRID_SIZE * 2,
-        width: 80, height: OBSTACLE_HEIGHT,
-        speed: 0.75, color: '#0000FF'
+        width: 100, height: OBSTACLE_HEIGHT,
+        speed: 0.3, color: '#0000FF'
     },
     {
         x: 400, y: safeZone.y + GRID_SIZE * 2,
-        width: 80, height: OBSTACLE_HEIGHT,
-        speed: 0.75, color: '#0000FF'
+        width: 100, height: OBSTACLE_HEIGHT,
+        speed: 0.3, color: '#0000FF'
     },
     // Row 3: Medium right-to-left
     {
         x: 0, y: safeZone.y + GRID_SIZE * 3,
-        width: 40, height: OBSTACLE_HEIGHT,
-        speed: -1, color: '#800080'
+        width: 120, height: OBSTACLE_HEIGHT,
+        speed: -0.4, color: '#800080'
     },
     {
         x: 200, y: safeZone.y + GRID_SIZE * 3,
-        width: 40, height: OBSTACLE_HEIGHT,
-        speed: -1, color: '#800080'
+        width: 120, height: OBSTACLE_HEIGHT,
+        speed: -0.4, color: '#800080'
     },
     {
         x: 400, y: safeZone.y + GRID_SIZE * 3,
-        width: 40, height: OBSTACLE_HEIGHT,
-        speed: -1, color: '#800080'
+        width: 120, height: OBSTACLE_HEIGHT,
+        speed: -0.4, color: '#800080'
     },
     // Row 4: Fast left-to-right
     {
         x: 0, y: safeZone.y + GRID_SIZE * 4,
-        width: 50, height: OBSTACLE_HEIGHT,
-        speed: 1.25, color: '#FFA500'
+        width: 70, height: OBSTACLE_HEIGHT,
+        speed: 0.5, color: '#FFA500'
     },
     {
         x: 250, y: safeZone.y + GRID_SIZE * 4,
-        width: 50, height: OBSTACLE_HEIGHT,
-        speed: 1.25, color: '#FFA500'
+        width: 70, height: OBSTACLE_HEIGHT,
+        speed: 0.5, color: '#FFA500'
     },
     {
         x: 500, y: safeZone.y + GRID_SIZE * 4,
-        width: 50, height: OBSTACLE_HEIGHT,
-        speed: 1.25, color: '#FFA500'
+        width: 70, height: OBSTACLE_HEIGHT,
+        speed: 0.5, color: '#FFA500'
     },
     // Row 5: Medium right-to-left
     {
         x: 0, y: safeZone.y + GRID_SIZE * 5,
-        width: 70, height: OBSTACLE_HEIGHT,
-        speed: -0.75, color: '#FFD700'
+        width: 90, height: OBSTACLE_HEIGHT,
+        speed: -0.3, color: '#FFD700'
     },
     {
         x: 350, y: safeZone.y + GRID_SIZE * 5,
-        width: 70, height: OBSTACLE_HEIGHT,
-        speed: -0.75, color: '#FFD700'
+        width: 90, height: OBSTACLE_HEIGHT,
+        speed: -0.3, color: '#FFD700'
     },
 
     // Second set of obstacles (above safe zone)
     // Row 6: Slow right-to-left
     {
         x: 0, y: safeZone.y - GRID_SIZE,
-        width: 60, height: OBSTACLE_HEIGHT,
-        speed: -0.5, color: '#00FFFF'
+        width: 80, height: OBSTACLE_HEIGHT,
+        speed: -0.2, color: '#00FFFF'
     },
     {
         x: 300, y: safeZone.y - GRID_SIZE,
-        width: 60, height: OBSTACLE_HEIGHT,
-        speed: -0.5, color: '#00FFFF'
+        width: 80, height: OBSTACLE_HEIGHT,
+        speed: -0.2, color: '#00FFFF'
     },
     // Row 7: Medium left-to-right
     {
         x: 0, y: safeZone.y - GRID_SIZE * 2,
-        width: 80, height: OBSTACLE_HEIGHT,
-        speed: 0.75, color: '#FF00FF'
+        width: 100, height: OBSTACLE_HEIGHT,
+        speed: 0.3, color: '#FF00FF'
     },
     {
         x: 400, y: safeZone.y - GRID_SIZE * 2,
-        width: 80, height: OBSTACLE_HEIGHT,
-        speed: 0.75, color: '#FF00FF'
+        width: 100, height: OBSTACLE_HEIGHT,
+        speed: 0.3, color: '#FF00FF'
     },
     // Row 8: Medium right-to-left
     {
         x: 0, y: safeZone.y - GRID_SIZE * 3,
-        width: 40, height: OBSTACLE_HEIGHT,
-        speed: -1, color: '#32CD32'
+        width: 120, height: OBSTACLE_HEIGHT,
+        speed: -0.4, color: '#32CD32'
     },
     {
         x: 200, y: safeZone.y - GRID_SIZE * 3,
-        width: 40, height: OBSTACLE_HEIGHT,
-        speed: -1, color: '#32CD32'
+        width: 120, height: OBSTACLE_HEIGHT,
+        speed: -0.4, color: '#32CD32'
     },
     {
         x: 400, y: safeZone.y - GRID_SIZE * 3,
-        width: 40, height: OBSTACLE_HEIGHT,
-        speed: -1, color: '#32CD32'
+        width: 120, height: OBSTACLE_HEIGHT,
+        speed: -0.4, color: '#32CD32'
     },
     // Row 9: Fast left-to-right
     {
         x: 0, y: safeZone.y - GRID_SIZE * 4,
-        width: 50, height: OBSTACLE_HEIGHT,
-        speed: 1.25, color: '#8B4513'
+        width: 70, height: OBSTACLE_HEIGHT,
+        speed: 0.5, color: '#8B4513'
     },
     {
         x: 250, y: safeZone.y - GRID_SIZE * 4,
-        width: 50, height: OBSTACLE_HEIGHT,
-        speed: 1.25, color: '#8B4513'
+        width: 70, height: OBSTACLE_HEIGHT,
+        speed: 0.5, color: '#8B4513'
     },
     {
         x: 500, y: safeZone.y - GRID_SIZE * 4,
-        width: 50, height: OBSTACLE_HEIGHT,
-        speed: 1.25, color: '#8B4513'
+        width: 70, height: OBSTACLE_HEIGHT,
+        speed: 0.5, color: '#8B4513'
     },
     // Row 10: Medium right-to-left
     {
         x: 0, y: safeZone.y - GRID_SIZE * 5,
-        width: 70, height: OBSTACLE_HEIGHT,
-        speed: -0.75, color: '#C0C0C0'
+        width: 90, height: OBSTACLE_HEIGHT,
+        speed: -0.3, color: '#C0C0C0'
     },
     {
         x: 350, y: safeZone.y - GRID_SIZE * 5,
-        width: 70, height: OBSTACLE_HEIGHT,
-        speed: -0.75, color: '#C0C0C0'
+        width: 90, height: OBSTACLE_HEIGHT,
+        speed: -0.3, color: '#C0C0C0'
     }
 ];
 
@@ -324,37 +324,59 @@ function updateObstacles() {
     });
 }
 
-// Draw finish line
+// Draw finish line with pixel pattern
 function drawFinishLine() {
-    ctx.fillStyle = finishLine.color;
-    ctx.fillRect(0, finishLine.y, canvas.width, finishLine.height);
+    const patternSize = 10;
+    for (let x = 0; x < canvas.width; x += patternSize) {
+        for (let y = finishLine.y; y < finishLine.y + finishLine.height; y += patternSize) {
+            if ((x + y) % (patternSize * 2) === 0) {
+                ctx.fillStyle = '#90EE90';
+            } else {
+                ctx.fillStyle = '#70CF70';
+            }
+            ctx.fillRect(x, y, patternSize, patternSize);
+        }
+    }
 }
 
-// Draw safe zone
+// Draw safe zone with pixel pattern
 function drawSafeZone() {
-    ctx.fillStyle = safeZone.color;
-    ctx.fillRect(0, safeZone.y, canvas.width, safeZone.height);
+    const patternSize = 10;
+    for (let x = 0; x < canvas.width; x += patternSize) {
+        for (let y = safeZone.y; y < safeZone.y + safeZone.height; y += patternSize) {
+            if ((x + y) % (patternSize * 2) === 0) {
+                ctx.fillStyle = '#90EE90';
+            } else {
+                ctx.fillStyle = '#70CF70';
+            }
+            ctx.fillRect(x, y, patternSize, patternSize);
+        }
+    }
 }
 
 // Draw status
 function drawStatus() {
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '20px Arial';
+    ctx.font = '16px "Press Start 2P"';
     
     // Draw lives and scores
     ctx.textAlign = 'left';
-    ctx.fillText(`Lives: ${'♥'.repeat(gameState.lives)}`, 10, 25);
+    // Draw lives on the left
+    ctx.fillText(`Lives: ${'♥'.repeat(gameState.lives)}`, 10, 30);
     
     const totalScore = gameState.score + gameState.bonusPoints;
-    ctx.textAlign = 'right';
-    ctx.fillText(`Score: ${totalScore} · High Score: ${gameState.highScore}`, canvas.width - 10, 25);
     
-    // Draw timer if game is active
+    // Draw timer at the top if game is active
     if (gameState.hasStartedMoving && !gameState.isGameOver) {
         ctx.textAlign = 'center';
         const currentTime = (Date.now() - gameState.startTime) / 1000;
-        ctx.fillText(`Time: ${formatTime(currentTime)}s`, canvas.width / 2, 25);
+        ctx.fillText(`Time: ${formatTime(currentTime)}s`, canvas.width / 2, 30);
     }
+    
+    // Draw score and high score on separate lines on the right
+    ctx.textAlign = 'right';
+    ctx.fillText(`Score: ${totalScore}`, canvas.width - 10, 30);
+    ctx.fillText(`High Score: ${gameState.highScore}`, canvas.width - 10, 60);
     
     // Draw messages
     if (gameState.message && gameState.messageTimer > 0) {
@@ -369,22 +391,111 @@ function drawStatus() {
         const isNewHighScore = updateHighScore(totalScore);
         
         ctx.textAlign = 'center';
-        ctx.font = '48px Arial';
-        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
+        ctx.font = '32px "Press Start 2P"';
+        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 60);
         
         if (isNewHighScore) {
             ctx.fillStyle = '#FFD700'; // Gold color for new high score
-            ctx.fillText('NEW HIGH SCORE!', canvas.width / 2, canvas.height / 2 + 10);
+            ctx.fillText('NEW HIGH SCORE!', canvas.width / 2, canvas.height / 2);
             ctx.fillStyle = '#FFFFFF'; // Reset to white
         }
         
-        ctx.font = '24px Arial';
-        ctx.fillText(`Score: ${gameState.score}`, canvas.width / 2, canvas.height / 2 + 50);
-        ctx.fillText(`Bonus Points: ${gameState.bonusPoints}`, canvas.width / 2, canvas.height / 2 + 80);
-        ctx.fillText(`Total Score: ${totalScore}`, canvas.width / 2, canvas.height / 2 + 110);
-        ctx.fillText(`High Score: ${gameState.highScore}`, canvas.width / 2, canvas.height / 2 + 140);
-        ctx.fillText('Press Space to Restart', canvas.width / 2, canvas.height / 2 + 180);
+        ctx.font = '16px "Press Start 2P"';
+        ctx.fillText(`Score: ${gameState.score}`, canvas.width / 2, canvas.height / 2 + 60);
+        ctx.fillText(`Bonus Points: ${gameState.bonusPoints}`, canvas.width / 2, canvas.height / 2 + 90);
+        ctx.fillText(`Total Score: ${totalScore}`, canvas.width / 2, canvas.height / 2 + 120);
+        ctx.fillText(`High Score: ${gameState.highScore}`, canvas.width / 2, canvas.height / 2 + 150);
+        ctx.fillText('Press Space to Restart', canvas.width / 2, canvas.height / 2 + 190);
     }
+}
+
+// Function to draw vehicles
+function drawVehicle(vehicle) {
+    const pixelSize = 2;
+    const darkerColor = vehicle.color.replace(/[0-9A-F]{2}/g, 
+        c => Math.max(0, parseInt(c, 16) - 32).toString(16).padStart(2, '0'));
+    const lighterColor = vehicle.color.replace(/[0-9A-F]{2}/g,
+        c => Math.min(255, parseInt(c, 16) + 32).toString(16).padStart(2, '0'));
+
+    // Draw base vehicle body
+    ctx.fillStyle = vehicle.color;
+    ctx.fillRect(vehicle.x, vehicle.y, vehicle.width, vehicle.height);
+
+    // Draw vehicle details based on color
+    switch(vehicle.color.toUpperCase()) {
+        case '#FF0000': // Red car (sedan)
+            // Windows
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(vehicle.x + vehicle.width*0.3, vehicle.y, vehicle.width*0.4, vehicle.height);
+            // Lights
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(vehicle.x, vehicle.y, pixelSize*2, pixelSize*2);
+            ctx.fillRect(vehicle.x + vehicle.width - pixelSize*2, vehicle.y, pixelSize*2, pixelSize*2);
+            break;
+
+        case '#0000FF': // Blue truck
+            // Cabin
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(vehicle.x, vehicle.y, vehicle.width*0.3, vehicle.height);
+            // Cargo area lines
+            ctx.fillStyle = lighterColor;
+            for(let x = vehicle.width*0.4; x < vehicle.width; x += pixelSize*3) {
+                ctx.fillRect(vehicle.x + x, vehicle.y, pixelSize, vehicle.height);
+            }
+            break;
+
+        case '#800080': // Purple bus
+            // Windows
+            ctx.fillStyle = '#000000';
+            for(let x = pixelSize*2; x < vehicle.width - pixelSize*2; x += pixelSize*4) {
+                ctx.fillRect(vehicle.x + x, vehicle.y, pixelSize*2, vehicle.height/2);
+            }
+            break;
+
+        case '#FFA500': // Orange sports car
+            // Streamlined design
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(vehicle.x + vehicle.width*0.2, vehicle.y, vehicle.width*0.3, vehicle.height);
+            // Spoiler
+            ctx.fillStyle = darkerColor;
+            ctx.fillRect(vehicle.x + vehicle.width - pixelSize*4, vehicle.y - pixelSize*2, pixelSize*4, pixelSize*2);
+            break;
+
+        case '#FFD700': // Yellow taxi
+            // Windows
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(vehicle.x + vehicle.width*0.3, vehicle.y, vehicle.width*0.4, vehicle.height);
+            // Taxi sign
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(vehicle.x + vehicle.width*0.4, vehicle.y - pixelSize*2, pixelSize*4, pixelSize*2);
+            break;
+
+        case '#00FFFF': // Cyan police car
+            // Windows
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(vehicle.x + vehicle.width*0.3, vehicle.y, vehicle.width*0.4, vehicle.height);
+            // Light bar
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(vehicle.x + vehicle.width*0.3, vehicle.y - pixelSize*2, pixelSize*4, pixelSize*2);
+            ctx.fillStyle = '#0000FF';
+            ctx.fillRect(vehicle.x + vehicle.width*0.5, vehicle.y - pixelSize*2, pixelSize*4, pixelSize*2);
+            break;
+
+        default:
+            // Generic vehicle design for other colors
+            // Windows
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(vehicle.x + vehicle.width*0.3, vehicle.y, vehicle.width*0.4, vehicle.height);
+            // Lights
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(vehicle.x, vehicle.y, pixelSize*2, pixelSize*2);
+            ctx.fillRect(vehicle.x + vehicle.width - pixelSize*2, vehicle.y, pixelSize*2, pixelSize*2);
+    }
+
+    // Wheels (common to all vehicles)
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(vehicle.x + pixelSize*2, vehicle.y + vehicle.height - pixelSize*2, pixelSize*3, pixelSize*2);
+    ctx.fillRect(vehicle.x + vehicle.width - pixelSize*5, vehicle.y + vehicle.height - pixelSize*2, pixelSize*3, pixelSize*2);
 }
 
 // Game loop
@@ -392,20 +503,62 @@ function gameLoop() {
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
+    // Draw background grid
+    const gridSize = 20;
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 1;
+    
+    // Vertical lines
+    for (let x = 0; x < canvas.width; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+    }
+    
+    // Horizontal lines
+    for (let y = 0; y < canvas.height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+    }
+    
     // Draw finish line and safe zone
     drawFinishLine();
     drawSafeZone();
     
-    // Update and draw obstacles
+    // Update and draw vehicles
     updateObstacles();
     obstacles.forEach(obstacle => {
-        ctx.fillStyle = obstacle.color;
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        drawVehicle(obstacle);
     });
     
-    // Draw frog
+    // Draw frog (pixel art style)
+    const pixelSize = 3;
     ctx.fillStyle = '#00ff00';
-    ctx.fillRect(frog.x, frog.y, frog.size, frog.size);
+    
+    // Body
+    ctx.fillRect(frog.x + pixelSize*3, frog.y + pixelSize*3, pixelSize*4, pixelSize*4);
+    
+    // Eyes
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(frog.x + pixelSize*2, frog.y + pixelSize*2, pixelSize*2, pixelSize*2);
+    ctx.fillRect(frog.x + pixelSize*6, frog.y + pixelSize*2, pixelSize*2, pixelSize*2);
+    
+    // Pupils
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(frog.x + pixelSize*2, frog.y + pixelSize*2, pixelSize, pixelSize);
+    ctx.fillRect(frog.x + pixelSize*6, frog.y + pixelSize*2, pixelSize, pixelSize);
+    
+    // Legs
+    ctx.fillStyle = '#00cc00';
+    // Front legs
+    ctx.fillRect(frog.x + pixelSize*2, frog.y + pixelSize*6, pixelSize*2, pixelSize*2);
+    ctx.fillRect(frog.x + pixelSize*6, frog.y + pixelSize*6, pixelSize*2, pixelSize*2);
+    // Back legs
+    ctx.fillRect(frog.x + pixelSize*1, frog.y + pixelSize*4, pixelSize*2, pixelSize*2);
+    ctx.fillRect(frog.x + pixelSize*7, frog.y + pixelSize*4, pixelSize*2, pixelSize*2);
     
     // Check for collisions
     if (!gameState.isGameOver) {
