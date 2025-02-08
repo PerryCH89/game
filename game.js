@@ -42,10 +42,25 @@ const OBSTACLE_HEIGHT = 20;
 const gameState = {
     lives: 3,
     score: 0,
+    bonusPoints: 0,
     isGameOver: false,
     message: '',
-    messageTimer: 0
+    messageTimer: 0,
+    startTime: null,
+    completionTime: 0,
+    hasStartedMoving: false,
+    highScore: parseInt(localStorage.getItem('froggerHighScore')) || 0
 };
+
+// Update high score
+function updateHighScore(totalScore) {
+    if (totalScore > gameState.highScore) {
+        gameState.highScore = totalScore;
+        localStorage.setItem('froggerHighScore', totalScore);
+        return true;
+    }
+    return false;
+}
 
 // Frog properties
 const frog = {
@@ -206,6 +221,19 @@ const obstacles = [
     }
 ];
 
+// Calculate time bonus based on completion time
+function calculateTimeBonus(completionTime) {
+    if (completionTime <= 5) return 10;
+    if (completionTime <= 10) return 5;
+    if (completionTime <= 15) return 3;
+    return 0;
+}
+
+// Format time for display
+function formatTime(seconds) {
+    return seconds.toFixed(1);
+}
+
 // Handle keyboard input
 document.addEventListener('keydown', (e) => {
     if (gameState.isGameOver) {
@@ -214,6 +242,12 @@ document.addEventListener('keydown', (e) => {
             return;
         }
         return;
+    }
+    
+    // Start timer on first movement
+    if (!gameState.hasStartedMoving) {
+        gameState.startTime = Date.now();
+        gameState.hasStartedMoving = true;
     }
     
     switch(e.key) {
@@ -256,14 +290,23 @@ function checkCollision(obstacle) {
 function resetFrog() {
     frog.x = canvas.width / 2;
     frog.y = canvas.height - GRID_SIZE;
+    // Reset timer when returning to start
+    if (!gameState.isGameOver) {
+        gameState.startTime = null;
+        gameState.hasStartedMoving = false;
+    }
 }
 
 // Reset entire game
 function resetGame() {
     gameState.lives = 3;
     gameState.score = 0;
+    gameState.bonusPoints = 0;
     gameState.isGameOver = false;
     gameState.message = '';
+    gameState.startTime = null;
+    gameState.completionTime = 0;
+    gameState.hasStartedMoving = false;
     resetFrog();
 }
 
@@ -297,24 +340,50 @@ function drawSafeZone() {
 function drawStatus() {
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '20px Arial';
+    
+    // Draw lives and scores
     ctx.textAlign = 'left';
     ctx.fillText(`Lives: ${'♥'.repeat(gameState.lives)}`, 10, 25);
-    ctx.textAlign = 'right';
-    ctx.fillText(`Score: ${gameState.score}`, canvas.width - 10, 25);
     
+    const totalScore = gameState.score + gameState.bonusPoints;
+    ctx.textAlign = 'right';
+    ctx.fillText(`Score: ${totalScore} · High Score: ${gameState.highScore}`, canvas.width - 10, 25);
+    
+    // Draw timer if game is active
+    if (gameState.hasStartedMoving && !gameState.isGameOver) {
+        ctx.textAlign = 'center';
+        const currentTime = (Date.now() - gameState.startTime) / 1000;
+        ctx.fillText(`Time: ${formatTime(currentTime)}s`, canvas.width / 2, 25);
+    }
+    
+    // Draw messages
     if (gameState.message && gameState.messageTimer > 0) {
         ctx.textAlign = 'center';
         ctx.fillText(gameState.message, canvas.width / 2, canvas.height / 2);
         gameState.messageTimer--;
     }
     
+    // Draw game over screen
     if (gameState.isGameOver) {
+        const totalScore = gameState.score + gameState.bonusPoints;
+        const isNewHighScore = updateHighScore(totalScore);
+        
         ctx.textAlign = 'center';
         ctx.font = '48px Arial';
-        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
+        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
+        
+        if (isNewHighScore) {
+            ctx.fillStyle = '#FFD700'; // Gold color for new high score
+            ctx.fillText('NEW HIGH SCORE!', canvas.width / 2, canvas.height / 2 + 10);
+            ctx.fillStyle = '#FFFFFF'; // Reset to white
+        }
+        
         ctx.font = '24px Arial';
-        ctx.fillText(`Final Score: ${gameState.score}`, canvas.width / 2, canvas.height / 2 + 40);
-        ctx.fillText('Press Space to Restart', canvas.width / 2, canvas.height / 2 + 80);
+        ctx.fillText(`Score: ${gameState.score}`, canvas.width / 2, canvas.height / 2 + 50);
+        ctx.fillText(`Bonus Points: ${gameState.bonusPoints}`, canvas.width / 2, canvas.height / 2 + 80);
+        ctx.fillText(`Total Score: ${totalScore}`, canvas.width / 2, canvas.height / 2 + 110);
+        ctx.fillText(`High Score: ${gameState.highScore}`, canvas.width / 2, canvas.height / 2 + 140);
+        ctx.fillText('Press Space to Restart', canvas.width / 2, canvas.height / 2 + 180);
     }
 }
 
@@ -358,8 +427,17 @@ function gameLoop() {
     
     // Check for win
     if (!gameState.isGameOver && frog.y <= finishLine.y + finishLine.height) {
-        gameState.score++;
-        gameState.message = 'Point!';
+        // Calculate completion time and bonus
+        if (gameState.startTime) {
+            gameState.completionTime = (Date.now() - gameState.startTime) / 1000;
+            const bonus = calculateTimeBonus(gameState.completionTime);
+            gameState.bonusPoints += bonus;
+            gameState.message = bonus > 0 ? `+10 Points! +${bonus} Time Bonus!` : '+10 Points!';
+        } else {
+            gameState.message = '+10 Points!';
+        }
+        
+        gameState.score += 10;
         gameState.messageTimer = 30;
         playSound(sounds.point, 0.7); // 70% volume for scoring
         resetFrog();
