@@ -6,11 +6,12 @@ const ctx = canvas.getContext('2d');
 const sounds = {
     hop: document.getElementById('hopSound'),
     hit: document.getElementById('hitSound'),
-    point: document.getElementById('pointSound')
+    point: document.getElementById('pointSound'),
+    coin: document.getElementById('coinSound')
 };
 
-// Play sound with volume control
-function playSound(sound, customVolume = 0.7) {
+// Play sound with volume and duration control
+function playSound(sound, customVolume = 0.7, duration = null) {
     try {
         sound.volume = customVolume;
         sound.currentTime = 0; // Reset sound to start
@@ -19,6 +20,12 @@ function playSound(sound, customVolume = 0.7) {
             playPromise.catch(error => {
                 console.log('Audio play error:', error);
             });
+        }
+        if (duration) {
+            setTimeout(() => {
+                sound.pause();
+                sound.currentTime = 0;
+            }, duration);
         }
     } catch (error) {
         console.log('Sound playback error:', error);
@@ -29,6 +36,7 @@ function playSound(sound, customVolume = 0.7) {
 sounds.hop.addEventListener('canplaythrough', () => console.log('Hop sound loaded'));
 sounds.hit.addEventListener('canplaythrough', () => console.log('Hit sound loaded'));
 sounds.point.addEventListener('canplaythrough', () => console.log('Point sound loaded'));
+sounds.coin.addEventListener('canplaythrough', () => console.log('Coin sound loaded'));
 
 // Set canvas size
 canvas.width = 600;
@@ -37,6 +45,73 @@ canvas.height = 600;
 // Game properties
 const GRID_SIZE = 30;
 const OBSTACLE_HEIGHT = 30;
+const MAX_COINS = 3;
+const COIN_SPAWN_CHANCE = 0.02; // 2% chance per frame
+
+// Coins array
+const coins = [];
+
+// Get random Y position from obstacle rows
+function getRandomRoadY() {
+    // Get all obstacle rows
+    const obstacleRows = [
+        safeZone.y + GRID_SIZE,     // Row 1
+        safeZone.y + GRID_SIZE * 2, // Row 2
+        safeZone.y + GRID_SIZE * 3, // Row 3
+        safeZone.y + GRID_SIZE * 4, // Row 4
+        safeZone.y + GRID_SIZE * 5, // Row 5
+        safeZone.y - GRID_SIZE,     // Row 6
+        safeZone.y - GRID_SIZE * 2, // Row 7
+        safeZone.y - GRID_SIZE * 3, // Row 8
+        safeZone.y - GRID_SIZE * 4, // Row 9
+        safeZone.y - GRID_SIZE * 5  // Row 10
+    ];
+    
+    // Pick a random row
+    return obstacleRows[Math.floor(Math.random() * obstacleRows.length)];
+}
+
+// Spawn a new coin at random position
+function spawnCoin() {
+    if (coins.length < MAX_COINS && Math.random() < COIN_SPAWN_CHANCE) {
+        const x = Math.random() * (canvas.width - GRID_SIZE);
+        const y = getRandomRoadY();
+        coins.push({ x, y, size: GRID_SIZE });
+    }
+}
+
+// Draw a coin
+function drawCoin(coin) {
+    // Outer circle
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.arc(coin.x + coin.size/2, coin.y + coin.size/2, coin.size/3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Inner detail
+    ctx.fillStyle = '#FFA500';
+    ctx.beginPath();
+    ctx.arc(coin.x + coin.size/2, coin.y + coin.size/2, coin.size/6, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+// Check coin collection
+function checkCoinCollection() {
+    for (let i = coins.length - 1; i >= 0; i--) {
+        const coin = coins[i];
+        if (frog.x < coin.x + coin.size &&
+            frog.x + frog.size > coin.x &&
+            frog.y < coin.y + coin.size &&
+            frog.y + frog.size > coin.y) {
+            // Collect coin
+            coins.splice(i, 1);
+            gameState.score += 10;
+            gameState.message = '+10 Points!';
+            gameState.messageTimer = 30;
+            playSound(sounds.coin, 0.7, 150); // Play for 150ms
+        }
+    }
+}
 
 // Game state
 const gameState = {
@@ -91,66 +166,56 @@ const obstacles = [
     {
         x: 0, y: safeZone.y + GRID_SIZE,
         width: 80, height: OBSTACLE_HEIGHT,
-        speed: -0.2, color: '#FF0000'
+        speed: -0.3, color: '#FF0000'
     },
     {
-        x: 300, y: safeZone.y + GRID_SIZE,
+        x: 400, y: safeZone.y + GRID_SIZE,
         width: 80, height: OBSTACLE_HEIGHT,
-        speed: -0.2, color: '#FF0000'
+        speed: -0.3, color: '#FF0000'
     },
     // Row 2: Medium left-to-right
     {
         x: 0, y: safeZone.y + GRID_SIZE * 2,
         width: 100, height: OBSTACLE_HEIGHT,
-        speed: 0.3, color: '#0000FF'
+        speed: 0.4, color: '#0000FF'
     },
     {
-        x: 400, y: safeZone.y + GRID_SIZE * 2,
+        x: 500, y: safeZone.y + GRID_SIZE * 2,
         width: 100, height: OBSTACLE_HEIGHT,
-        speed: 0.3, color: '#0000FF'
+        speed: 0.4, color: '#0000FF'
     },
     // Row 3: Medium right-to-left
     {
         x: 0, y: safeZone.y + GRID_SIZE * 3,
         width: 120, height: OBSTACLE_HEIGHT,
-        speed: -0.4, color: '#800080'
+        speed: -0.5, color: '#800080'
     },
     {
-        x: 200, y: safeZone.y + GRID_SIZE * 3,
+        x: 300, y: safeZone.y + GRID_SIZE * 3,
         width: 120, height: OBSTACLE_HEIGHT,
-        speed: -0.4, color: '#800080'
-    },
-    {
-        x: 400, y: safeZone.y + GRID_SIZE * 3,
-        width: 120, height: OBSTACLE_HEIGHT,
-        speed: -0.4, color: '#800080'
+        speed: -0.5, color: '#800080'
     },
     // Row 4: Fast left-to-right
     {
         x: 0, y: safeZone.y + GRID_SIZE * 4,
         width: 70, height: OBSTACLE_HEIGHT,
-        speed: 0.5, color: '#FFA500'
+        speed: 0.6, color: '#FFA500'
     },
     {
-        x: 250, y: safeZone.y + GRID_SIZE * 4,
+        x: 300, y: safeZone.y + GRID_SIZE * 4,
         width: 70, height: OBSTACLE_HEIGHT,
-        speed: 0.5, color: '#FFA500'
-    },
-    {
-        x: 500, y: safeZone.y + GRID_SIZE * 4,
-        width: 70, height: OBSTACLE_HEIGHT,
-        speed: 0.5, color: '#FFA500'
+        speed: 0.6, color: '#FFA500'
     },
     // Row 5: Medium right-to-left
     {
         x: 0, y: safeZone.y + GRID_SIZE * 5,
         width: 90, height: OBSTACLE_HEIGHT,
-        speed: -0.3, color: '#FFD700'
+        speed: -0.4, color: '#FFD700'
     },
     {
-        x: 350, y: safeZone.y + GRID_SIZE * 5,
+        x: 450, y: safeZone.y + GRID_SIZE * 5,
         width: 90, height: OBSTACLE_HEIGHT,
-        speed: -0.3, color: '#FFD700'
+        speed: -0.4, color: '#FFD700'
     },
 
     // Second set of obstacles (above safe zone)
@@ -158,66 +223,56 @@ const obstacles = [
     {
         x: 0, y: safeZone.y - GRID_SIZE,
         width: 80, height: OBSTACLE_HEIGHT,
-        speed: -0.2, color: '#00FFFF'
+        speed: -0.3, color: '#00FFFF'
     },
     {
-        x: 300, y: safeZone.y - GRID_SIZE,
+        x: 400, y: safeZone.y - GRID_SIZE,
         width: 80, height: OBSTACLE_HEIGHT,
-        speed: -0.2, color: '#00FFFF'
+        speed: -0.3, color: '#00FFFF'
     },
     // Row 7: Medium left-to-right
     {
         x: 0, y: safeZone.y - GRID_SIZE * 2,
         width: 100, height: OBSTACLE_HEIGHT,
-        speed: 0.3, color: '#FF00FF'
+        speed: 0.4, color: '#FF00FF'
     },
     {
-        x: 400, y: safeZone.y - GRID_SIZE * 2,
+        x: 500, y: safeZone.y - GRID_SIZE * 2,
         width: 100, height: OBSTACLE_HEIGHT,
-        speed: 0.3, color: '#FF00FF'
+        speed: 0.4, color: '#FF00FF'
     },
     // Row 8: Medium right-to-left
     {
         x: 0, y: safeZone.y - GRID_SIZE * 3,
         width: 120, height: OBSTACLE_HEIGHT,
-        speed: -0.4, color: '#32CD32'
+        speed: -0.5, color: '#32CD32'
     },
     {
-        x: 200, y: safeZone.y - GRID_SIZE * 3,
+        x: 300, y: safeZone.y - GRID_SIZE * 3,
         width: 120, height: OBSTACLE_HEIGHT,
-        speed: -0.4, color: '#32CD32'
-    },
-    {
-        x: 400, y: safeZone.y - GRID_SIZE * 3,
-        width: 120, height: OBSTACLE_HEIGHT,
-        speed: -0.4, color: '#32CD32'
+        speed: -0.5, color: '#32CD32'
     },
     // Row 9: Fast left-to-right
     {
         x: 0, y: safeZone.y - GRID_SIZE * 4,
         width: 70, height: OBSTACLE_HEIGHT,
-        speed: 0.5, color: '#8B4513'
+        speed: 0.6, color: '#8B4513'
     },
     {
-        x: 250, y: safeZone.y - GRID_SIZE * 4,
+        x: 300, y: safeZone.y - GRID_SIZE * 4,
         width: 70, height: OBSTACLE_HEIGHT,
-        speed: 0.5, color: '#8B4513'
-    },
-    {
-        x: 500, y: safeZone.y - GRID_SIZE * 4,
-        width: 70, height: OBSTACLE_HEIGHT,
-        speed: 0.5, color: '#8B4513'
+        speed: 0.6, color: '#8B4513'
     },
     // Row 10: Medium right-to-left
     {
         x: 0, y: safeZone.y - GRID_SIZE * 5,
         width: 90, height: OBSTACLE_HEIGHT,
-        speed: -0.3, color: '#C0C0C0'
+        speed: -0.4, color: '#C0C0C0'
     },
     {
-        x: 350, y: safeZone.y - GRID_SIZE * 5,
+        x: 450, y: safeZone.y - GRID_SIZE * 5,
         width: 90, height: OBSTACLE_HEIGHT,
-        speed: -0.3, color: '#C0C0C0'
+        speed: -0.4, color: '#C0C0C0'
     }
 ];
 
@@ -307,6 +362,7 @@ function resetGame() {
     gameState.startTime = null;
     gameState.completionTime = 0;
     gameState.hasStartedMoving = false;
+    coins.length = 0; // Clear all coins
     resetFrog();
 }
 
@@ -551,6 +607,15 @@ function gameLoop() {
     obstacles.forEach(obstacle => {
         drawVehicle(obstacle);
     });
+
+    // Spawn and draw coins
+    spawnCoin();
+    coins.forEach(coin => {
+        drawCoin(coin);
+    });
+    
+    // Check coin collection
+    checkCoinCollection();
     
     // Draw frog (pixel art style)
     const pixelSize = 3;
