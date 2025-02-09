@@ -409,93 +409,111 @@ function drawStatus() {
     }
 }
 
-// Function to draw vehicles
+// Function to draw vehicles (8-bit style)
 function drawVehicle(vehicle) {
-    const pixelSize = 2;
-    const darkerColor = vehicle.color.replace(/[0-9A-F]{2}/g, 
-        c => Math.max(0, parseInt(c, 16) - 32).toString(16).padStart(2, '0'));
-    const lighterColor = vehicle.color.replace(/[0-9A-F]{2}/g,
-        c => Math.min(255, parseInt(c, 16) + 32).toString(16).padStart(2, '0'));
+    const height = OBSTACLE_HEIGHT - 6; // Reduced height
+    const whiteBlockSize = OBSTACLE_HEIGHT - 6; // Match reduced height
+    const totalWidth = (OBSTACLE_HEIGHT - 6) * 3; // Three times height
+    
+    // Center vehicle in its allocated space
+    const x = vehicle.x + (vehicle.width - totalWidth) / 2;
+    const y = vehicle.y + (vehicle.height - height) / 2;
 
+    const dotSize = 3; // Smaller details
+    
     // Draw base vehicle body
     ctx.fillStyle = vehicle.color;
-    ctx.fillRect(vehicle.x, vehicle.y, vehicle.width, vehicle.height);
+    ctx.fillRect(x, y, totalWidth, height);
 
-    // Draw vehicle details based on color
+    // Draw white block and details based on vehicle type
     switch(vehicle.color.toUpperCase()) {
-        case '#FF0000': // Red car (sedan)
-            // Windows
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(vehicle.x + vehicle.width*0.3, vehicle.y, vehicle.width*0.4, vehicle.height);
-            // Lights
+        case '#FF0000': // Red car - middle block
+            // White section
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + totalWidth/3, y, whiteBlockSize, height);
+            // Headlights
             ctx.fillStyle = '#FFFF00';
-            ctx.fillRect(vehicle.x, vehicle.y, pixelSize*2, pixelSize*2);
-            ctx.fillRect(vehicle.x + vehicle.width - pixelSize*2, vehicle.y, pixelSize*2, pixelSize*2);
+            ctx.fillRect(x + dotSize, y + height/3, dotSize, dotSize);
+            ctx.fillRect(x + dotSize, y + height*2/3, dotSize, dotSize);
+            // Taillights
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(x + totalWidth - dotSize*2, y + height/3, dotSize, dotSize);
+            ctx.fillRect(x + totalWidth - dotSize*2, y + height*2/3, dotSize, dotSize);
             break;
 
         case '#0000FF': // Blue truck
-            // Cabin
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(vehicle.x, vehicle.y, vehicle.width*0.3, vehicle.height);
-            // Cargo area lines
-            ctx.fillStyle = lighterColor;
-            for(let x = vehicle.width*0.4; x < vehicle.width; x += pixelSize*3) {
-                ctx.fillRect(vehicle.x + x, vehicle.y, pixelSize, vehicle.height);
-            }
+            // White cab section
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x, y, whiteBlockSize, height);
+            // Cab-cargo separator
+            ctx.fillStyle = '#0000AA';
+            ctx.fillRect(x + whiteBlockSize, y, dotSize, height);
+            // Headlights
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(x + dotSize, y + height/3, dotSize, dotSize);
+            ctx.fillRect(x + dotSize, y + height*2/3, dotSize, dotSize);
             break;
 
         case '#800080': // Purple bus
+            // White back section
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + totalWidth - whiteBlockSize, y, whiteBlockSize, height);
             // Windows
-            ctx.fillStyle = '#000000';
-            for(let x = pixelSize*2; x < vehicle.width - pixelSize*2; x += pixelSize*4) {
-                ctx.fillRect(vehicle.x + x, vehicle.y, pixelSize*2, vehicle.height/2);
+            ctx.fillStyle = '#FFFFFF';
+            for(let wx = x + dotSize*3; wx < x + totalWidth - whiteBlockSize - dotSize*2; wx += dotSize*3) {
+                ctx.fillRect(wx, y + height/3, dotSize*2, dotSize*2);
             }
             break;
 
         case '#FFA500': // Orange sports car
-            // Streamlined design
+            // White middle section
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + totalWidth/3, y, whiteBlockSize, height);
+            // Racing stripes
             ctx.fillStyle = '#000000';
-            ctx.fillRect(vehicle.x + vehicle.width*0.2, vehicle.y, vehicle.width*0.3, vehicle.height);
-            // Spoiler
-            ctx.fillStyle = darkerColor;
-            ctx.fillRect(vehicle.x + vehicle.width - pixelSize*4, vehicle.y - pixelSize*2, pixelSize*4, pixelSize*2);
+            ctx.fillRect(x + dotSize*2, y, dotSize, height);
+            ctx.fillRect(x + totalWidth - dotSize*3, y, dotSize, height);
+            // Headlights
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(x + dotSize, y + height/3, dotSize, dotSize);
             break;
 
         case '#FFD700': // Yellow taxi
-            // Windows
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(vehicle.x + vehicle.width*0.3, vehicle.y, vehicle.width*0.4, vehicle.height);
-            // Taxi sign
+            // White front section with checker pattern
             ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(vehicle.x + vehicle.width*0.4, vehicle.y - pixelSize*2, pixelSize*4, pixelSize*2);
+            ctx.fillRect(x, y, whiteBlockSize, height);
+            // Checker pattern
+            ctx.fillStyle = '#000000';
+            for(let cx = 0; cx < 3; cx++) {
+                for(let cy = 0; cy < 3; cy++) {
+                    if((cx + cy) % 2 === 0) {
+                        ctx.fillRect(x + cx*dotSize*2, y + cy*dotSize*2, dotSize*2, dotSize*2);
+                    }
+                }
+            }
+            // Roof light
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(x + whiteBlockSize/2 - dotSize/2, y - dotSize, dotSize, dotSize);
             break;
 
         case '#00FFFF': // Cyan police car
-            // Windows
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(vehicle.x + vehicle.width*0.3, vehicle.y, vehicle.width*0.4, vehicle.height);
+            // White back section
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + totalWidth - whiteBlockSize, y, whiteBlockSize, height);
+            // Side stripe
+            ctx.fillStyle = '#0000FF';
+            ctx.fillRect(x, y + height/2 - dotSize/2, totalWidth - whiteBlockSize, dotSize);
             // Light bar
             ctx.fillStyle = '#FF0000';
-            ctx.fillRect(vehicle.x + vehicle.width*0.3, vehicle.y - pixelSize*2, pixelSize*4, pixelSize*2);
+            ctx.fillRect(x + totalWidth/2 - dotSize*2, y - dotSize, dotSize, dotSize);
             ctx.fillStyle = '#0000FF';
-            ctx.fillRect(vehicle.x + vehicle.width*0.5, vehicle.y - pixelSize*2, pixelSize*4, pixelSize*2);
+            ctx.fillRect(x + totalWidth/2 + dotSize, y - dotSize, dotSize, dotSize);
             break;
 
-        default:
-            // Generic vehicle design for other colors
-            // Windows
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(vehicle.x + vehicle.width*0.3, vehicle.y, vehicle.width*0.4, vehicle.height);
-            // Lights
-            ctx.fillStyle = '#FFFF00';
-            ctx.fillRect(vehicle.x, vehicle.y, pixelSize*2, pixelSize*2);
-            ctx.fillRect(vehicle.x + vehicle.width - pixelSize*2, vehicle.y, pixelSize*2, pixelSize*2);
+        default: // Generic vehicle
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + totalWidth/3, y, whiteBlockSize, height);
     }
-
-    // Wheels (common to all vehicles)
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(vehicle.x + pixelSize*2, vehicle.y + vehicle.height - pixelSize*2, pixelSize*3, pixelSize*2);
-    ctx.fillRect(vehicle.x + vehicle.width - pixelSize*5, vehicle.y + vehicle.height - pixelSize*2, pixelSize*3, pixelSize*2);
 }
 
 // Game loop
