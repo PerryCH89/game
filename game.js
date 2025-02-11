@@ -6,11 +6,12 @@ const ctx = canvas.getContext('2d');
 const sounds = {
     hop: document.getElementById('hopSound'),
     hit: document.getElementById('hitSound'),
-    point: document.getElementById('pointSound')
+    point: document.getElementById('pointSound'),
+    coin: document.getElementById('coinSound')
 };
 
-// Play sound with volume control
-function playSound(sound, customVolume = 0.7) {
+// Play sound with volume and duration control
+function playSound(sound, customVolume = 0.7, duration = null) {
     try {
         sound.volume = customVolume;
         sound.currentTime = 0; // Reset sound to start
@@ -19,6 +20,12 @@ function playSound(sound, customVolume = 0.7) {
             playPromise.catch(error => {
                 console.log('Audio play error:', error);
             });
+        }
+        if (duration) {
+            setTimeout(() => {
+                sound.pause();
+                sound.currentTime = 0;
+            }, duration);
         }
     } catch (error) {
         console.log('Sound playback error:', error);
@@ -29,6 +36,7 @@ function playSound(sound, customVolume = 0.7) {
 sounds.hop.addEventListener('canplaythrough', () => console.log('Hop sound loaded'));
 sounds.hit.addEventListener('canplaythrough', () => console.log('Hit sound loaded'));
 sounds.point.addEventListener('canplaythrough', () => console.log('Point sound loaded'));
+sounds.coin.addEventListener('canplaythrough', () => console.log('Coin sound loaded'));
 
 // Set canvas size
 canvas.width = 600;
@@ -36,7 +44,74 @@ canvas.height = 600;
 
 // Game properties
 const GRID_SIZE = 30;
-const OBSTACLE_HEIGHT = 20;
+const OBSTACLE_HEIGHT = 30;
+const MAX_COINS = 3;
+const COIN_SPAWN_CHANCE = 0.02; // 2% chance per frame
+
+// Coins array
+const coins = [];
+
+// Get random Y position from obstacle rows
+function getRandomRoadY() {
+    // Get all obstacle rows
+    const obstacleRows = [
+        safeZone.y + GRID_SIZE,     // Row 1
+        safeZone.y + GRID_SIZE * 2, // Row 2
+        safeZone.y + GRID_SIZE * 3, // Row 3
+        safeZone.y + GRID_SIZE * 4, // Row 4
+        safeZone.y + GRID_SIZE * 5, // Row 5
+        safeZone.y - GRID_SIZE,     // Row 6
+        safeZone.y - GRID_SIZE * 2, // Row 7
+        safeZone.y - GRID_SIZE * 3, // Row 8
+        safeZone.y - GRID_SIZE * 4, // Row 9
+        safeZone.y - GRID_SIZE * 5  // Row 10
+    ];
+    
+    // Pick a random row
+    return obstacleRows[Math.floor(Math.random() * obstacleRows.length)];
+}
+
+// Spawn a new coin at random position
+function spawnCoin() {
+    if (coins.length < MAX_COINS && Math.random() < COIN_SPAWN_CHANCE) {
+        const x = Math.random() * (canvas.width - GRID_SIZE);
+        const y = getRandomRoadY();
+        coins.push({ x, y, size: GRID_SIZE });
+    }
+}
+
+// Draw a coin
+function drawCoin(coin) {
+    // Outer circle
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.arc(coin.x + coin.size/2, coin.y + coin.size/2, coin.size/3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Inner detail
+    ctx.fillStyle = '#FFA500';
+    ctx.beginPath();
+    ctx.arc(coin.x + coin.size/2, coin.y + coin.size/2, coin.size/6, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+// Check coin collection
+function checkCoinCollection() {
+    for (let i = coins.length - 1; i >= 0; i--) {
+        const coin = coins[i];
+        if (frog.x < coin.x + coin.size &&
+            frog.x + frog.size > coin.x &&
+            frog.y < coin.y + coin.size &&
+            frog.y + frog.size > coin.y) {
+            // Collect coin
+            coins.splice(i, 1);
+            gameState.score += 10;
+            gameState.message = '+10 Points!';
+            gameState.messageTimer = 30;
+            playSound(sounds.coin, 0.7, 150); // Play for 150ms
+        }
+    }
+}
 
 // Game state
 const gameState = {
@@ -90,134 +165,114 @@ const obstacles = [
     // Row 1 (bottom): Slow right-to-left
     {
         x: 0, y: safeZone.y + GRID_SIZE,
-        width: 60, height: OBSTACLE_HEIGHT,
-        speed: -0.5, color: '#FF0000'
+        width: 80, height: OBSTACLE_HEIGHT,
+        speed: -0.3, color: '#FF0000'
     },
     {
-        x: 300, y: safeZone.y + GRID_SIZE,
-        width: 60, height: OBSTACLE_HEIGHT,
-        speed: -0.5, color: '#FF0000'
+        x: 400, y: safeZone.y + GRID_SIZE,
+        width: 80, height: OBSTACLE_HEIGHT,
+        speed: -0.3, color: '#FF0000'
     },
     // Row 2: Medium left-to-right
     {
         x: 0, y: safeZone.y + GRID_SIZE * 2,
-        width: 80, height: OBSTACLE_HEIGHT,
-        speed: 0.75, color: '#0000FF'
+        width: 100, height: OBSTACLE_HEIGHT,
+        speed: 0.4, color: '#0000FF'
     },
     {
-        x: 400, y: safeZone.y + GRID_SIZE * 2,
-        width: 80, height: OBSTACLE_HEIGHT,
-        speed: 0.75, color: '#0000FF'
+        x: 500, y: safeZone.y + GRID_SIZE * 2,
+        width: 100, height: OBSTACLE_HEIGHT,
+        speed: 0.4, color: '#0000FF'
     },
     // Row 3: Medium right-to-left
     {
         x: 0, y: safeZone.y + GRID_SIZE * 3,
-        width: 40, height: OBSTACLE_HEIGHT,
-        speed: -1, color: '#800080'
+        width: 120, height: OBSTACLE_HEIGHT,
+        speed: -0.5, color: '#800080'
     },
     {
-        x: 200, y: safeZone.y + GRID_SIZE * 3,
-        width: 40, height: OBSTACLE_HEIGHT,
-        speed: -1, color: '#800080'
-    },
-    {
-        x: 400, y: safeZone.y + GRID_SIZE * 3,
-        width: 40, height: OBSTACLE_HEIGHT,
-        speed: -1, color: '#800080'
+        x: 300, y: safeZone.y + GRID_SIZE * 3,
+        width: 120, height: OBSTACLE_HEIGHT,
+        speed: -0.5, color: '#800080'
     },
     // Row 4: Fast left-to-right
     {
         x: 0, y: safeZone.y + GRID_SIZE * 4,
-        width: 50, height: OBSTACLE_HEIGHT,
-        speed: 1.25, color: '#FFA500'
+        width: 70, height: OBSTACLE_HEIGHT,
+        speed: 0.6, color: '#FFA500'
     },
     {
-        x: 250, y: safeZone.y + GRID_SIZE * 4,
-        width: 50, height: OBSTACLE_HEIGHT,
-        speed: 1.25, color: '#FFA500'
-    },
-    {
-        x: 500, y: safeZone.y + GRID_SIZE * 4,
-        width: 50, height: OBSTACLE_HEIGHT,
-        speed: 1.25, color: '#FFA500'
+        x: 300, y: safeZone.y + GRID_SIZE * 4,
+        width: 70, height: OBSTACLE_HEIGHT,
+        speed: 0.6, color: '#FFA500'
     },
     // Row 5: Medium right-to-left
     {
         x: 0, y: safeZone.y + GRID_SIZE * 5,
-        width: 70, height: OBSTACLE_HEIGHT,
-        speed: -0.75, color: '#FFD700'
+        width: 90, height: OBSTACLE_HEIGHT,
+        speed: -0.4, color: '#FFD700'
     },
     {
-        x: 350, y: safeZone.y + GRID_SIZE * 5,
-        width: 70, height: OBSTACLE_HEIGHT,
-        speed: -0.75, color: '#FFD700'
+        x: 450, y: safeZone.y + GRID_SIZE * 5,
+        width: 90, height: OBSTACLE_HEIGHT,
+        speed: -0.4, color: '#FFD700'
     },
 
     // Second set of obstacles (above safe zone)
     // Row 6: Slow right-to-left
     {
         x: 0, y: safeZone.y - GRID_SIZE,
-        width: 60, height: OBSTACLE_HEIGHT,
-        speed: -0.5, color: '#00FFFF'
+        width: 80, height: OBSTACLE_HEIGHT,
+        speed: -0.3, color: '#00FFFF'
     },
     {
-        x: 300, y: safeZone.y - GRID_SIZE,
-        width: 60, height: OBSTACLE_HEIGHT,
-        speed: -0.5, color: '#00FFFF'
+        x: 400, y: safeZone.y - GRID_SIZE,
+        width: 80, height: OBSTACLE_HEIGHT,
+        speed: -0.3, color: '#00FFFF'
     },
     // Row 7: Medium left-to-right
     {
         x: 0, y: safeZone.y - GRID_SIZE * 2,
-        width: 80, height: OBSTACLE_HEIGHT,
-        speed: 0.75, color: '#FF00FF'
+        width: 100, height: OBSTACLE_HEIGHT,
+        speed: 0.4, color: '#FF00FF'
     },
     {
-        x: 400, y: safeZone.y - GRID_SIZE * 2,
-        width: 80, height: OBSTACLE_HEIGHT,
-        speed: 0.75, color: '#FF00FF'
+        x: 500, y: safeZone.y - GRID_SIZE * 2,
+        width: 100, height: OBSTACLE_HEIGHT,
+        speed: 0.4, color: '#FF00FF'
     },
     // Row 8: Medium right-to-left
     {
         x: 0, y: safeZone.y - GRID_SIZE * 3,
-        width: 40, height: OBSTACLE_HEIGHT,
-        speed: -1, color: '#32CD32'
+        width: 120, height: OBSTACLE_HEIGHT,
+        speed: -0.5, color: '#32CD32'
     },
     {
-        x: 200, y: safeZone.y - GRID_SIZE * 3,
-        width: 40, height: OBSTACLE_HEIGHT,
-        speed: -1, color: '#32CD32'
-    },
-    {
-        x: 400, y: safeZone.y - GRID_SIZE * 3,
-        width: 40, height: OBSTACLE_HEIGHT,
-        speed: -1, color: '#32CD32'
+        x: 300, y: safeZone.y - GRID_SIZE * 3,
+        width: 120, height: OBSTACLE_HEIGHT,
+        speed: -0.5, color: '#32CD32'
     },
     // Row 9: Fast left-to-right
     {
         x: 0, y: safeZone.y - GRID_SIZE * 4,
-        width: 50, height: OBSTACLE_HEIGHT,
-        speed: 1.25, color: '#8B4513'
+        width: 70, height: OBSTACLE_HEIGHT,
+        speed: 0.6, color: '#8B4513'
     },
     {
-        x: 250, y: safeZone.y - GRID_SIZE * 4,
-        width: 50, height: OBSTACLE_HEIGHT,
-        speed: 1.25, color: '#8B4513'
-    },
-    {
-        x: 500, y: safeZone.y - GRID_SIZE * 4,
-        width: 50, height: OBSTACLE_HEIGHT,
-        speed: 1.25, color: '#8B4513'
+        x: 300, y: safeZone.y - GRID_SIZE * 4,
+        width: 70, height: OBSTACLE_HEIGHT,
+        speed: 0.6, color: '#8B4513'
     },
     // Row 10: Medium right-to-left
     {
         x: 0, y: safeZone.y - GRID_SIZE * 5,
-        width: 70, height: OBSTACLE_HEIGHT,
-        speed: -0.75, color: '#C0C0C0'
+        width: 90, height: OBSTACLE_HEIGHT,
+        speed: -0.4, color: '#C0C0C0'
     },
     {
-        x: 350, y: safeZone.y - GRID_SIZE * 5,
-        width: 70, height: OBSTACLE_HEIGHT,
-        speed: -0.75, color: '#C0C0C0'
+        x: 450, y: safeZone.y - GRID_SIZE * 5,
+        width: 90, height: OBSTACLE_HEIGHT,
+        speed: -0.4, color: '#C0C0C0'
     }
 ];
 
@@ -307,6 +362,7 @@ function resetGame() {
     gameState.startTime = null;
     gameState.completionTime = 0;
     gameState.hasStartedMoving = false;
+    coins.length = 0; // Clear all coins
     resetFrog();
 }
 
@@ -324,37 +380,59 @@ function updateObstacles() {
     });
 }
 
-// Draw finish line
+// Draw finish line with pixel pattern
 function drawFinishLine() {
-    ctx.fillStyle = finishLine.color;
-    ctx.fillRect(0, finishLine.y, canvas.width, finishLine.height);
+    const patternSize = 10;
+    for (let x = 0; x < canvas.width; x += patternSize) {
+        for (let y = finishLine.y; y < finishLine.y + finishLine.height; y += patternSize) {
+            if ((x + y) % (patternSize * 2) === 0) {
+                ctx.fillStyle = '#90EE90';
+            } else {
+                ctx.fillStyle = '#70CF70';
+            }
+            ctx.fillRect(x, y, patternSize, patternSize);
+        }
+    }
 }
 
-// Draw safe zone
+// Draw safe zone with pixel pattern
 function drawSafeZone() {
-    ctx.fillStyle = safeZone.color;
-    ctx.fillRect(0, safeZone.y, canvas.width, safeZone.height);
+    const patternSize = 10;
+    for (let x = 0; x < canvas.width; x += patternSize) {
+        for (let y = safeZone.y; y < safeZone.y + safeZone.height; y += patternSize) {
+            if ((x + y) % (patternSize * 2) === 0) {
+                ctx.fillStyle = '#90EE90';
+            } else {
+                ctx.fillStyle = '#70CF70';
+            }
+            ctx.fillRect(x, y, patternSize, patternSize);
+        }
+    }
 }
 
 // Draw status
 function drawStatus() {
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '20px Arial';
+    ctx.font = '16px "Press Start 2P"';
     
     // Draw lives and scores
     ctx.textAlign = 'left';
-    ctx.fillText(`Lives: ${'♥'.repeat(gameState.lives)}`, 10, 25);
+    // Draw lives on the left
+    ctx.fillText(`Lives: ${'♥'.repeat(gameState.lives)}`, 10, 30);
     
     const totalScore = gameState.score + gameState.bonusPoints;
-    ctx.textAlign = 'right';
-    ctx.fillText(`Score: ${totalScore} · High Score: ${gameState.highScore}`, canvas.width - 10, 25);
     
-    // Draw timer if game is active
+    // Draw timer at the top if game is active
     if (gameState.hasStartedMoving && !gameState.isGameOver) {
         ctx.textAlign = 'center';
         const currentTime = (Date.now() - gameState.startTime) / 1000;
-        ctx.fillText(`Time: ${formatTime(currentTime)}s`, canvas.width / 2, 25);
+        ctx.fillText(`Time: ${formatTime(currentTime)}s`, canvas.width / 2, 30);
     }
+    
+    // Draw score and high score on separate lines on the right
+    ctx.textAlign = 'right';
+    ctx.fillText(`Score: ${totalScore}`, canvas.width - 10, 30);
+    ctx.fillText(`High Score: ${gameState.highScore}`, canvas.width - 10, 60);
     
     // Draw messages
     if (gameState.message && gameState.messageTimer > 0) {
@@ -369,21 +447,128 @@ function drawStatus() {
         const isNewHighScore = updateHighScore(totalScore);
         
         ctx.textAlign = 'center';
-        ctx.font = '48px Arial';
-        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
+        ctx.font = '32px "Press Start 2P"';
+        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 60);
         
         if (isNewHighScore) {
             ctx.fillStyle = '#FFD700'; // Gold color for new high score
-            ctx.fillText('NEW HIGH SCORE!', canvas.width / 2, canvas.height / 2 + 10);
+            ctx.fillText('NEW HIGH SCORE!', canvas.width / 2, canvas.height / 2);
             ctx.fillStyle = '#FFFFFF'; // Reset to white
         }
         
-        ctx.font = '24px Arial';
-        ctx.fillText(`Score: ${gameState.score}`, canvas.width / 2, canvas.height / 2 + 50);
-        ctx.fillText(`Bonus Points: ${gameState.bonusPoints}`, canvas.width / 2, canvas.height / 2 + 80);
-        ctx.fillText(`Total Score: ${totalScore}`, canvas.width / 2, canvas.height / 2 + 110);
-        ctx.fillText(`High Score: ${gameState.highScore}`, canvas.width / 2, canvas.height / 2 + 140);
-        ctx.fillText('Press Space to Restart', canvas.width / 2, canvas.height / 2 + 180);
+        ctx.font = '16px "Press Start 2P"';
+        ctx.fillText(`Score: ${gameState.score}`, canvas.width / 2, canvas.height / 2 + 60);
+        ctx.fillText(`Bonus Points: ${gameState.bonusPoints}`, canvas.width / 2, canvas.height / 2 + 90);
+        ctx.fillText(`Total Score: ${totalScore}`, canvas.width / 2, canvas.height / 2 + 120);
+        ctx.fillText(`High Score: ${gameState.highScore}`, canvas.width / 2, canvas.height / 2 + 150);
+        ctx.fillText('Press Space to Restart', canvas.width / 2, canvas.height / 2 + 190);
+    }
+}
+
+// Function to draw vehicles (8-bit style)
+function drawVehicle(vehicle) {
+    const height = OBSTACLE_HEIGHT - 6; // Reduced height
+    const whiteBlockSize = OBSTACLE_HEIGHT - 6; // Match reduced height
+    const totalWidth = (OBSTACLE_HEIGHT - 6) * 3; // Three times height
+    
+    // Center vehicle in its allocated space
+    const x = vehicle.x + (vehicle.width - totalWidth) / 2;
+    const y = vehicle.y + (vehicle.height - height) / 2;
+
+    const dotSize = 3; // Smaller details
+    
+    // Draw base vehicle body
+    ctx.fillStyle = vehicle.color;
+    ctx.fillRect(x, y, totalWidth, height);
+
+    // Draw white block and details based on vehicle type
+    switch(vehicle.color.toUpperCase()) {
+        case '#FF0000': // Red car - middle block
+            // White section
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + totalWidth/3, y, whiteBlockSize, height);
+            // Headlights
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(x + dotSize, y + height/3, dotSize, dotSize);
+            ctx.fillRect(x + dotSize, y + height*2/3, dotSize, dotSize);
+            // Taillights
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(x + totalWidth - dotSize*2, y + height/3, dotSize, dotSize);
+            ctx.fillRect(x + totalWidth - dotSize*2, y + height*2/3, dotSize, dotSize);
+            break;
+
+        case '#0000FF': // Blue truck
+            // White cab section
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x, y, whiteBlockSize, height);
+            // Cab-cargo separator
+            ctx.fillStyle = '#0000AA';
+            ctx.fillRect(x + whiteBlockSize, y, dotSize, height);
+            // Headlights
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(x + dotSize, y + height/3, dotSize, dotSize);
+            ctx.fillRect(x + dotSize, y + height*2/3, dotSize, dotSize);
+            break;
+
+        case '#800080': // Purple bus
+            // White back section
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + totalWidth - whiteBlockSize, y, whiteBlockSize, height);
+            // Windows
+            ctx.fillStyle = '#FFFFFF';
+            for(let wx = x + dotSize*3; wx < x + totalWidth - whiteBlockSize - dotSize*2; wx += dotSize*3) {
+                ctx.fillRect(wx, y + height/3, dotSize*2, dotSize*2);
+            }
+            break;
+
+        case '#FFA500': // Orange sports car
+            // White middle section
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + totalWidth/3, y, whiteBlockSize, height);
+            // Racing stripes
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(x + dotSize*2, y, dotSize, height);
+            ctx.fillRect(x + totalWidth - dotSize*3, y, dotSize, height);
+            // Headlights
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(x + dotSize, y + height/3, dotSize, dotSize);
+            break;
+
+        case '#FFD700': // Yellow taxi
+            // White front section with checker pattern
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x, y, whiteBlockSize, height);
+            // Checker pattern
+            ctx.fillStyle = '#000000';
+            for(let cx = 0; cx < 3; cx++) {
+                for(let cy = 0; cy < 3; cy++) {
+                    if((cx + cy) % 2 === 0) {
+                        ctx.fillRect(x + cx*dotSize*2, y + cy*dotSize*2, dotSize*2, dotSize*2);
+                    }
+                }
+            }
+            // Roof light
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(x + whiteBlockSize/2 - dotSize/2, y - dotSize, dotSize, dotSize);
+            break;
+
+        case '#00FFFF': // Cyan police car
+            // White back section
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + totalWidth - whiteBlockSize, y, whiteBlockSize, height);
+            // Side stripe
+            ctx.fillStyle = '#0000FF';
+            ctx.fillRect(x, y + height/2 - dotSize/2, totalWidth - whiteBlockSize, dotSize);
+            // Light bar
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(x + totalWidth/2 - dotSize*2, y - dotSize, dotSize, dotSize);
+            ctx.fillStyle = '#0000FF';
+            ctx.fillRect(x + totalWidth/2 + dotSize, y - dotSize, dotSize, dotSize);
+            break;
+
+        default: // Generic vehicle
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + totalWidth/3, y, whiteBlockSize, height);
     }
 }
 
@@ -392,20 +577,71 @@ function gameLoop() {
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
+    // Draw background grid
+    const gridSize = 20;
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 1;
+    
+    // Vertical lines
+    for (let x = 0; x < canvas.width; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+    }
+    
+    // Horizontal lines
+    for (let y = 0; y < canvas.height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+    }
+    
     // Draw finish line and safe zone
     drawFinishLine();
     drawSafeZone();
     
-    // Update and draw obstacles
+    // Update and draw vehicles
     updateObstacles();
     obstacles.forEach(obstacle => {
-        ctx.fillStyle = obstacle.color;
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        drawVehicle(obstacle);
+    });
+
+    // Spawn and draw coins
+    spawnCoin();
+    coins.forEach(coin => {
+        drawCoin(coin);
     });
     
-    // Draw frog
+    // Check coin collection
+    checkCoinCollection();
+    
+    // Draw frog (pixel art style)
+    const pixelSize = 3;
     ctx.fillStyle = '#00ff00';
-    ctx.fillRect(frog.x, frog.y, frog.size, frog.size);
+    
+    // Body
+    ctx.fillRect(frog.x + pixelSize*3, frog.y + pixelSize*3, pixelSize*4, pixelSize*4);
+    
+    // Eyes
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(frog.x + pixelSize*2, frog.y + pixelSize*2, pixelSize*2, pixelSize*2);
+    ctx.fillRect(frog.x + pixelSize*6, frog.y + pixelSize*2, pixelSize*2, pixelSize*2);
+    
+    // Pupils
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(frog.x + pixelSize*2, frog.y + pixelSize*2, pixelSize, pixelSize);
+    ctx.fillRect(frog.x + pixelSize*6, frog.y + pixelSize*2, pixelSize, pixelSize);
+    
+    // Legs
+    ctx.fillStyle = '#00cc00';
+    // Front legs
+    ctx.fillRect(frog.x + pixelSize*2, frog.y + pixelSize*6, pixelSize*2, pixelSize*2);
+    ctx.fillRect(frog.x + pixelSize*6, frog.y + pixelSize*6, pixelSize*2, pixelSize*2);
+    // Back legs
+    ctx.fillRect(frog.x + pixelSize*1, frog.y + pixelSize*4, pixelSize*2, pixelSize*2);
+    ctx.fillRect(frog.x + pixelSize*7, frog.y + pixelSize*4, pixelSize*2, pixelSize*2);
     
     // Check for collisions
     if (!gameState.isGameOver) {
